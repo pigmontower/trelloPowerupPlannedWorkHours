@@ -1,0 +1,19 @@
+{
+  "name": "予定工数表示Power-Up",
+  "details": "タイムラインでカードの予定工数を表示するPower-Up",
+  "icon": {
+    "url": "images/icon.svg"
+  },
+  "author": "Your Name",
+  "capabilities": [
+    "callback",
+    "card-buttons",
+    "card-badges",
+    "show-settings"
+  ],
+  "connectors": {
+    "iframe": {
+      "url": "./index.html"
+    }
+  }
+}
