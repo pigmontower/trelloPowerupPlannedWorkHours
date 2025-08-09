@@ -6,7 +6,7 @@ window.TrelloPowerUp.initialize({
         if (estimatedHours && estimatedHours > 0) {
           return [{
             text: `${estimatedHours}h`,
-            icon: './images/clock.svg',
+            icon: 'https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/regular/clock.svg',
             color: 'blue'
           }];
         }
@@ -17,7 +17,7 @@ window.TrelloPowerUp.initialize({
   // カードボタンの表示
   'card-buttons': function(t, options) {
     return [{
-      icon: './images/clock.svg',
+      icon: 'https://raw.githubusercontent.com/FortAwesome/Font-Awesome/master/svgs/regular/clock.svg',
       text: '予定工数設定',
       callback: function(t) {
         return t.modal({
