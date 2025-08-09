@@ -4,7 +4,7 @@
   "icon": {
     "url": "images/icon.svg"
   },
-  "author": "Your Name",
+  "author": "Yamamoto Masahiro",
   "capabilities": [
     "callback",
     "card-buttons",
