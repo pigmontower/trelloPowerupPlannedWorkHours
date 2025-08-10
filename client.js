@@ -7,7 +7,8 @@
 (function () {
   'use strict';
 
-  var ICON_PATH = './images/clock.svg';
+  var DEBUG = true; // 必要に応じて false に
+  var ICON_PATH = 'https://pigmontower.github.io/trelloPowerupPlannedWorkHours/images/clock.svg';
   var TARGET_CUSTOM_FIELD_NAME = '予定工数';
 
   /**
@@ -15,14 +16,14 @@
    */
   function parseHoursFromCustomFieldItem(customFieldItem) {
     if (!customFieldItem || !customFieldItem.value) return null;
-    var value = customFieldItem.value;
+    var v = customFieldItem.value;
     // Trello custom field values are strings even for number types
-    if (value.number != null) {
-      var n = parseFloat(value.number);
+    if (v.number != null) {
+      var n = parseFloat(v.number);
       return isNaN(n) ? null : n;
     }
-    if (value.text != null) {
-      var t = parseFloat(value.text);
+    if (v.text != null) {
+      var t = parseFloat(v.text);
       return isNaN(t) ? null : t;
     }
     return null;
@@ -41,56 +42,47 @@
 
   window.TrelloPowerUp.initialize(
     {
-      'card-badges': function (t, opts) {
-        // Strategy:
-        // 1) Get card customFieldItems and board customFields definitions
-        // 2) Locate the custom field definition named "予定工数"
-        // 3) Find the corresponding item on the card and display as hours badge
+      'card-badges': function (t) {
         return Promise.all([
           t.card('id', 'name', 'customFieldItems'),
           t.board('id', 'name', 'customFields')
-        ]).then(function (results) {
-          var card = results[0] || {};
-          var board = results[1] || {};
-          var customFieldItems = card.customFieldItems || [];
-          var customFields = board.customFields || [];
+        ]).then(function ([card, board]) {
+          var items = (card && card.customFieldItems) || [];
+          var defs = (board && board.customFields) || [];
 
-          // Find the custom field definition with the target name
-          var estimateFieldDef = null;
-          for (var i = 0; i < customFields.length; i++) {
-            var f = customFields[i];
-            if (f && f.name === TARGET_CUSTOM_FIELD_NAME) {
-              estimateFieldDef = f;
-              break;
+          // 1) 定義名「予定工数」と一致するフィールドを優先
+          var estimateDef = defs.find(function (f) {
+            return f && (f.name === TARGET_CUSTOM_FIELD_NAME || (f.name && f.name.trim() === TARGET_CUSTOM_FIELD_NAME));
+          });
+
+          var item = null;
+          if (estimateDef) {
+            item = items.find(function (it) { return it && it.idCustomField === estimateDef.id; });
+          }
+
+          // 2) 見つからない場合、数値として解釈できる最初のカスタムフィールドをフォールバック採用
+          if (!item) {
+            for (var i = 0; i < items.length; i++) {
+              var h = parseHoursFromCustomFieldItem(items[i]);
+              if (h != null && h > 0) { item = items[i]; break; }
             }
           }
 
-          if (!estimateFieldDef) {
-            return [];
+          var hours = parseHoursFromCustomFieldItem(item);
+
+          if (DEBUG) {
+            // DevTools で Power-Up iframe（コンソール右上のコンテキスト選択で origin: pigmontower.github.io）を選んでログ確認
+            console.log('[予定工数 badge dbg]', {
+              card, defsCount: defs.length, itemsCount: items.length,
+              estimateDef, chosenItem: item, hours
+            });
           }
 
-          // Find the item on this card for that custom field definition
-          var estimateItem = null;
-          for (var j = 0; j < customFieldItems.length; j++) {
-            var it = customFieldItems[j];
-            if (it && it.idCustomField === estimateFieldDef.id) {
-              estimateItem = it;
-              break;
-            }
-          }
-
-          var hours = parseHoursFromCustomFieldItem(estimateItem);
-          if (hours != null && hours > 0) {
-            return [buildHoursBadge(hours)];
-          }
-          return [];
+          return (hours != null && hours > 0) ? [buildHoursBadge(hours)] : [];
         });
       }
     },
-    {
-      // Helpful when debugging failures in development
-      helpfulStacks: true
-    }
+    { helpfulStacks: true }
   );
 })();
 
