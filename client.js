@@ -4,86 +4,17 @@
   - No buttons or settings UIs are implemented.
 */
 
+// client.js（スモークテスト用）
 (function () {
   'use strict';
-
-  var DEBUG = true; // 必要に応じて false に
-  var ICON_PATH = 'https://pigmontower.github.io/trelloPowerupPlannedWorkHours/images/clock.svg';
-  var TARGET_CUSTOM_FIELD_NAME = '予定工数';
-
-  /**
-   * Resolve the numeric hours from a customFieldItem.
-   */
-  function parseHoursFromCustomFieldItem(customFieldItem) {
-    if (!customFieldItem || !customFieldItem.value) return null;
-    var v = customFieldItem.value;
-    // Trello custom field values are strings even for number types
-    if (v.number != null) {
-      var n = parseFloat(v.number);
-      return isNaN(n) ? null : n;
-    }
-    if (v.text != null) {
-      var t = parseFloat(v.text);
-      return isNaN(t) ? null : t;
-    }
-    return null;
-  }
-
-  /**
-   * Build a badge object from hours.
-   */
-  function buildHoursBadge(hours) {
-    return {
-      text: hours + 'h',
-      icon: ICON_PATH,
-      color: 'blue'
-    };
-  }
-
-  window.TrelloPowerUp.initialize(
-    {
-      'card-badges': function (t) {
-        return Promise.all([
-          t.card('id', 'name', 'customFieldItems'),
-          t.board('id', 'name', 'customFields')
-        ]).then(function ([card, board]) {
-          var items = (card && card.customFieldItems) || [];
-          var defs = (board && board.customFields) || [];
-
-          // 1) 定義名「予定工数」と一致するフィールドを優先
-          var estimateDef = defs.find(function (f) {
-            return f && (f.name === TARGET_CUSTOM_FIELD_NAME || (f.name && f.name.trim() === TARGET_CUSTOM_FIELD_NAME));
-          });
-
-          var item = null;
-          if (estimateDef) {
-            item = items.find(function (it) { return it && it.idCustomField === estimateDef.id; });
-          }
-
-          // 2) 見つからない場合、数値として解釈できる最初のカスタムフィールドをフォールバック採用
-          if (!item) {
-            for (var i = 0; i < items.length; i++) {
-              var h = parseHoursFromCustomFieldItem(items[i]);
-              if (h != null && h > 0) { item = items[i]; break; }
-            }
-          }
-
-          var hours = parseHoursFromCustomFieldItem(item);
-
-          if (DEBUG) {
-            // DevTools で Power-Up iframe（コンソール右上のコンテキスト選択で origin: pigmontower.github.io）を選んでログ確認
-            console.log('[予定工数 badge dbg]', {
-              card, defsCount: defs.length, itemsCount: items.length,
-              estimateDef, chosenItem: item, hours
-            });
-          }
-
-          return (hours != null && hours > 0) ? [buildHoursBadge(hours)] : [];
-        });
-      }
+  window.TrelloPowerUp.initialize({
+    'card-badges': function (t) {
+      return [{ text: 'TEST', color: 'blue' }];
     },
-    { helpfulStacks: true }
-  );
+    'card-detail-badges': function (t) {
+      return [{ title: 'Power‑Up動作確認', text: 'OK', color: 'blue' }];
+    }
+  });
 })();
 
 window.TrelloPowerUp.initialize({
