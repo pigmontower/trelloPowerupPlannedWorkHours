@@ -6,10 +6,8 @@
   },
   "author": "Your Name",
   "capabilities": [
-    "callback",
-    "card-buttons",
     "card-badges",
-    "show-settings"
+    "card-detail-badges"
   ],
   "connectors": {
     "iframe": {
